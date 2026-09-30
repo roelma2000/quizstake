@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     app_name: str = "QuizStake API"
-    database_url: str = "sqlite:///./quizstake.db"
+    database_url: str = "postgresql+psycopg://postgres@localhost:5432/quizstake"
     cors_origins: str = "http://localhost:4200"
     global_max_questions: int = 100
 

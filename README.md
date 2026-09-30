@@ -1,6 +1,6 @@
 # QuizStake
 
-QuizStake is a randomized learning and exam-practice application built with Angular and FastAPI.
+QuizStake is a randomized learning and exam-practice application built with Angular, FastAPI, SQLAlchemy, and PostgreSQL.
 
 ## Core rules
 
@@ -24,14 +24,38 @@ QuizStake is a randomized learning and exam-practice application built with Angu
 
 ```text
 quizstake/
-├─ backend/      FastAPI + SQLAlchemy API
+├─ backend/      FastAPI + SQLAlchemy + PostgreSQL API
 ├─ frontend/     Angular standalone application
 └─ README.md
 ```
 
 ## Backend
 
-Requirements: Python 3.12+ recommended.
+Requirements: Python 3.12+ recommended and a local PostgreSQL server.
+
+### 1. Create the local PostgreSQL database
+
+Connect to PostgreSQL as a role allowed to create databases and run:
+
+```sql
+CREATE DATABASE quizstake;
+```
+
+The same SQL is stored in `backend/scripts/create_database.sql`.
+
+### 2. Configure the connection
+
+From `backend`, copy `.env.example` to `.env` and replace `YOUR_POSTGRES_PASSWORD` with the password for your local `postgres` role.
+
+Example:
+
+```text
+QUIZSTAKE_DATABASE_URL=postgresql+psycopg://postgres:YOUR_POSTGRES_PASSWORD@localhost:5432/quizstake
+```
+
+`backend/.env` is ignored by Git and must not be committed.
+
+### 3. Install and run the API
 
 ```bash
 cd backend
@@ -39,13 +63,16 @@ python -m venv .venv
 # Windows PowerShell
 .\.venv\Scripts\Activate.ps1
 pip install -e .[dev]
+python scripts/check_database.py
 fastapi dev app/main.py
 ```
+
+The initial development build creates the application tables automatically on first API startup. Database migrations should replace this behavior before production use.
 
 API: `http://127.0.0.1:8000`
 OpenAPI: `http://127.0.0.1:8000/docs`
 
-The starter uses SQLite (`backend/quizstake.db`) so no database server is required for local development.
+Automated backend tests continue to use temporary SQLite databases so the test suite is isolated from your local PostgreSQL data.
 
 ### Load sample data
 
@@ -58,8 +85,6 @@ POST /api/v1/questions/import
 with `backend/sample-data/questions.json` or `questions.csv`.
 
 ## Frontend
-
-Angular 22 requires a supported Node.js version. Use Node.js 22.22.3+ (or another version supported by Angular 22).
 
 ```bash
 cd frontend
