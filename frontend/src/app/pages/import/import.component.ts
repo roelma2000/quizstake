@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component } from '@angular/core';
 import { ApiService } from '../../core/api.service';
 
 @Component({
@@ -36,7 +36,10 @@ export class ImportComponent {
   result: { imported: number; skipped: number; errors: string[] } | null = null;
   error = '';
 
-  constructor(private readonly api: ApiService) {}
+  constructor(
+    private readonly api: ApiService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   choose(event: Event): void {
     const input = event.target as HTMLInputElement;
@@ -50,8 +53,16 @@ export class ImportComponent {
     this.uploading = true;
     this.error = '';
     this.api.importQuestions(this.file).subscribe({
-      next: result => { this.result = result; this.uploading = false; },
-      error: err => { this.error = err?.error?.detail || 'Import failed.'; this.uploading = false; }
+      next: result => {
+        this.result = result;
+        this.uploading = false;
+        this.cdr.markForCheck();
+      },
+      error: err => {
+        this.error = err?.error?.detail || 'Import failed.';
+        this.uploading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 }
