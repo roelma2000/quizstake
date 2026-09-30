@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { PublicQuestion } from '../../core/models';
@@ -68,7 +68,8 @@ export class QuizComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly api: ApiService,
-    private readonly state: QuizStateService
+    private readonly state: QuizStateService,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   get progress(): number {
@@ -99,16 +100,19 @@ export class QuizComponent implements OnInit {
         if (!response.next_question) {
           this.error = 'The server did not return the next question.';
           this.submitting = false;
+          this.cdr.markForCheck();
           return;
         }
         this.question = response.next_question;
         this.state.saveQuestion(this.sessionId, response.next_question);
         this.selectedChoiceId = null;
         this.submitting = false;
+        this.cdr.markForCheck();
       },
       error: err => {
         this.error = err?.error?.detail || 'Could not submit answer.';
         this.submitting = false;
+        this.cdr.markForCheck();
       }
     });
   }
