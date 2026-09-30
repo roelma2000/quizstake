@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -66,15 +66,24 @@ export class HomeComponent implements OnInit {
   constructor(
     private readonly api: ApiService,
     private readonly router: Router,
-    private readonly state: QuizStateService
+    private readonly state: QuizStateService,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   get activeTopics(): Topic[] { return this.topics.filter(t => t.active); }
 
   ngOnInit(): void {
     this.api.getTopics().subscribe({
-      next: topics => { this.topics = topics; this.loading = false; },
-      error: err => { this.error = err?.error?.detail || 'Could not load topics.'; this.loading = false; }
+      next: topics => {
+        this.topics = topics;
+        this.loading = false;
+        this.cdr.markForCheck();
+      },
+      error: err => {
+        this.error = err?.error?.detail || 'Could not load topics.';
+        this.loading = false;
+        this.cdr.markForCheck();
+      }
     });
   }
 
@@ -97,6 +106,7 @@ export class HomeComponent implements OnInit {
       error: err => {
         this.error = err?.error?.detail || 'Could not start quiz.';
         this.starting = false;
+        this.cdr.markForCheck();
       }
     });
   }
