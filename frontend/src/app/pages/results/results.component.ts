@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { ApiService } from '../../core/api.service';
 import { QuizResult } from '../../core/models';
@@ -52,13 +52,23 @@ export class ResultsComponent implements OnInit {
   result: QuizResult | null = null;
   error = '';
 
-  constructor(private readonly route: ActivatedRoute, private readonly api: ApiService) {}
+  constructor(
+    private readonly route: ActivatedRoute,
+    private readonly api: ApiService,
+    private readonly cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     const sessionId = Number(this.route.snapshot.paramMap.get('sessionId'));
     this.api.getResults(sessionId).subscribe({
-      next: result => this.result = result,
-      error: err => this.error = err?.error?.detail || 'Could not load quiz results.'
+      next: result => {
+        this.result = result;
+        this.cdr.markForCheck();
+      },
+      error: err => {
+        this.error = err?.error?.detail || 'Could not load quiz results.';
+        this.cdr.markForCheck();
+      }
     });
   }
 }
