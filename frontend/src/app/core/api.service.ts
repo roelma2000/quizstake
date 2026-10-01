@@ -5,6 +5,7 @@ import {
   AdminQuestion,
   AnswerResponse,
   QuestionPayload,
+  QuizHistoryItem,
   QuizResult,
   QuizStartResponse,
   Topic,
@@ -69,6 +70,14 @@ export class ApiService {
 
   getResults(sessionId: number): Observable<QuizResult> {
     return this.http.get<QuizResult>(`${this.baseUrl}/quizzes/${sessionId}/results`);
+  }
+
+  getQuizHistory(topicId?: number | null, limit = 100): Observable<QuizHistoryItem[]> {
+    let params = new HttpParams().set('limit', limit);
+    if (topicId) {
+      params = params.set('topic_id', topicId);
+    }
+    return this.http.get<QuizHistoryItem[]>(`${this.baseUrl}/quizzes/history`, { params });
   }
 
   importQuestions(file: File): Observable<{ imported: number; skipped: number; errors: string[] }> {

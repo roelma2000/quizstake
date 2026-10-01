@@ -98,3 +98,19 @@ export interface TopicPayload {
   max_questions: number;
   active?: boolean;
 }
+
+
+export interface QuizHistoryItem {
+  session_id: number;
+  topic_id: number;
+  topic_name: string;
+  status: string;
+  end_reason: string | null;
+  started_at: string;
+  ended_at: string | null;
+  total_questions: number;
+  answered_questions: number;
+  correct_answers: number;
+  mistakes: number;
+  score_percent: number;
+}

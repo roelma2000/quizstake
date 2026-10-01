@@ -1,15 +1,16 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.schemas.quiz import (
     AnswerSubmitRequest,
     AnswerSubmitResponse,
+    QuizHistoryItem,
     QuizResultResponse,
     QuizStartRequest,
     QuizStartResponse,
 )
-from app.services.quiz_engine import build_results, start_quiz, submit_answer
+from app.services.quiz_engine import build_results, list_quiz_history, start_quiz, submit_answer
 
 router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 
@@ -23,6 +24,15 @@ def start(payload: QuizStartRequest, db: Session = Depends(get_db)) -> QuizStart
         total_questions=len(session.questions),
         question=question,
     )
+
+
+@router.get("/history", response_model=list[QuizHistoryItem])
+def history(
+    topic_id: int | None = Query(default=None, gt=0),
+    limit: int = Query(default=100, ge=1, le=500),
+    db: Session = Depends(get_db),
+) -> list[QuizHistoryItem]:
+    return [QuizHistoryItem(**item) for item in list_quiz_history(db, topic_id, limit)]
 
 
 @router.post("/{session_id}/answer", response_model=AnswerSubmitResponse)
