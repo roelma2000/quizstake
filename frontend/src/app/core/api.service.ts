@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import {
   AdminQuestion,
   AnswerResponse,
+  PerformanceAnalysis,
   QuestionPayload,
   QuizHistoryItem,
   QuizResult,
@@ -78,6 +79,14 @@ export class ApiService {
       params = params.set('topic_id', topicId);
     }
     return this.http.get<QuizHistoryItem[]>(`${this.baseUrl}/quizzes/history`, { params });
+  }
+
+  getPerformance(topicId?: number | null, weakLimit = 20): Observable<PerformanceAnalysis> {
+    let params = new HttpParams().set('weak_limit', weakLimit);
+    if (topicId) {
+      params = params.set('topic_id', topicId);
+    }
+    return this.http.get<PerformanceAnalysis>(`${this.baseUrl}/performance`, { params });
   }
 
   importQuestions(file: File): Observable<{ imported: number; skipped: number; errors: string[] }> {
