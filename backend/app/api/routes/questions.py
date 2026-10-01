@@ -63,6 +63,20 @@ def _load_question(db: Session, question_id: int) -> Question:
     return question
 
 
+@router.post("/import", response_model=ImportResult)
+async def bulk_import_questions(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+) -> ImportResult:
+    try:
+        content = await file.read()
+        records = parse_upload(file.filename or "", content)
+        stats = import_records(db, records)
+        return ImportResult(imported=stats.imported, skipped=stats.skipped, errors=stats.errors or [])
+    except (UnicodeDecodeError, ValueError, KeyError) as exc:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+
+
 @router.get("", response_model=list[QuestionRead])
 def list_questions(
     topic_id: int | None = Query(default=None, gt=0),
@@ -168,17 +182,3 @@ def delete_question(question_id: int, db: Session = Depends(get_db)) -> Response
     db.delete(question)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
-@router.post("/import", response_model=ImportResult)
-async def bulk_import_questions(
-    file: UploadFile = File(...),
-    db: Session = Depends(get_db),
-) -> ImportResult:
-    try:
-        content = await file.read()
-        records = parse_upload(file.filename or "", content)
-        stats = import_records(db, records)
-        return ImportResult(imported=stats.imported, skipped=stats.skipped, errors=stats.errors or [])
-    except (UnicodeDecodeError, ValueError, KeyError) as exc:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
