@@ -2,6 +2,10 @@
   {
     "topic": "Module 1",
     "question": "What should a driver do at a steady red traffic light?",
+    "question_alternatives": [
+      "What action is required at a steady red traffic light?",
+      "How should a driver respond to a steady red signal?"
+    ],
     "explanation": "A steady red signal requires a complete stop before proceeding when legally permitted.",
     "answers": [
       {
@@ -29,6 +33,10 @@
   {
     "topic": "Module 1",
     "question": "Before changing lanes, what should a driver do?",
+    "question_alternatives": [
+      "What checks should a driver make before moving into another lane?",
+      "Before a lane change, what should the driver check and do?"
+    ],
     "explanation": "Check mirrors, signal, and verify the blind spot before moving into another lane.",
     "answers": [
       {
