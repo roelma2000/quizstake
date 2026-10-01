@@ -14,6 +14,7 @@ class Question(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     topic_id: Mapped[int] = mapped_column(ForeignKey("topics.id", ondelete="CASCADE"), index=True)
     prompt: Mapped[str] = mapped_column(Text())
+    prompt_alternatives: Mapped[list[str]] = mapped_column(JSON, default=list)
     explanation: Mapped[str | None] = mapped_column(Text(), nullable=True)
     active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(
