@@ -10,7 +10,13 @@ from app.schemas.quiz import (
     QuizStartRequest,
     QuizStartResponse,
 )
-from app.services.quiz_engine import build_results, list_quiz_history, start_quiz, submit_answer
+from app.services.quiz_engine import (
+    build_results,
+    list_quiz_history,
+    start_quiz,
+    start_weak_quiz,
+    submit_answer,
+)
 
 router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 
@@ -18,6 +24,17 @@ router = APIRouter(prefix="/quizzes", tags=["quizzes"])
 @router.post("/start", response_model=QuizStartResponse)
 def start(payload: QuizStartRequest, db: Session = Depends(get_db)) -> QuizStartResponse:
     session, question = start_quiz(db, payload.topic_id, payload.question_count)
+    return QuizStartResponse(
+        session_id=session.id,
+        topic_id=session.topic_id,
+        total_questions=len(session.questions),
+        question=question,
+    )
+
+
+@router.post("/start-weak", response_model=QuizStartResponse)
+def start_weak(payload: QuizStartRequest, db: Session = Depends(get_db)) -> QuizStartResponse:
+    session, question = start_weak_quiz(db, payload.topic_id, payload.question_count)
     return QuizStartResponse(
         session_id=session.id,
         topic_id=session.topic_id,
