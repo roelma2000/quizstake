@@ -19,6 +19,7 @@ def _to_read(question: Question) -> QuestionRead:
         topic_id=question.topic_id,
         topic_name=question.topic.name,
         prompt=question.prompt,
+        prompt_alternatives=question.prompt_alternatives or [],
         explanation=question.explanation,
         active=question.active,
         choices=question.choices,
@@ -108,6 +109,7 @@ def create_question(payload: QuestionCreate, db: Session = Depends(get_db)) -> Q
     question = Question(
         topic_id=payload.topic_id,
         prompt=payload.prompt,
+        prompt_alternatives=payload.prompt_alternatives,
         explanation=payload.explanation,
         active=payload.active,
     )
