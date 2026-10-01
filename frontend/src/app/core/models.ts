@@ -69,6 +69,7 @@ export interface AdminQuestion {
   topic_id: number;
   topic_name: string;
   prompt: string;
+  prompt_alternatives: string[];
   explanation: string | null;
   active: boolean;
   choices: AdminAnswerChoice[];
@@ -83,6 +84,7 @@ export interface QuestionChoiceInput {
 export interface QuestionPayload {
   topic_id: number;
   prompt: string;
+  prompt_alternatives: string[];
   explanation: string | null;
   active: boolean;
   choices: QuestionChoiceInput[];
