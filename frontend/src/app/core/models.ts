@@ -55,3 +55,35 @@ export interface QuizResult {
   score_percent: number;
   review: ReviewItem[];
 }
+
+
+export interface AdminAnswerChoice {
+  id: number;
+  text: string;
+  alternatives: string[];
+  is_correct: boolean;
+}
+
+export interface AdminQuestion {
+  id: number;
+  topic_id: number;
+  topic_name: string;
+  prompt: string;
+  explanation: string | null;
+  active: boolean;
+  choices: AdminAnswerChoice[];
+}
+
+export interface QuestionChoiceInput {
+  text: string;
+  alternatives: string[];
+  is_correct: boolean;
+}
+
+export interface QuestionPayload {
+  topic_id: number;
+  prompt: string;
+  explanation: string | null;
+  active: boolean;
+  choices: QuestionChoiceInput[];
+}
