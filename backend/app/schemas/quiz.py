@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from pydantic import BaseModel, Field
 
 
@@ -45,6 +47,21 @@ class ReviewItem(BaseModel):
     correct_answer: str
     correct: bool
     explanation: str | None = None
+
+
+class QuizHistoryItem(BaseModel):
+    session_id: int
+    topic_id: int
+    topic_name: str
+    status: str
+    end_reason: str | None
+    started_at: datetime
+    ended_at: datetime | None
+    total_questions: int
+    answered_questions: int
+    correct_answers: int
+    mistakes: int
+    score_percent: float
 
 
 class QuizResultResponse(BaseModel):
