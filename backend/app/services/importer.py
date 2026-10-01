@@ -30,6 +30,14 @@ def _truthy(value: object) -> bool:
 def _normalize_record(record: dict) -> dict:
     topic = str(record.get("topic", "")).strip()
     question = str(record.get("question", "")).strip()
+    question_alternatives = record.get("question_alternatives") or []
+    if isinstance(question_alternatives, str):
+        question_alternatives = [
+            item.strip() for item in question_alternatives.split("||") if item.strip()
+        ]
+    question_alternatives = list(
+        dict.fromkeys(str(item).strip() for item in question_alternatives if str(item).strip())
+    )
     explanation = str(record.get("explanation", "")).strip() or None
 
     if "answers" in record:
@@ -63,6 +71,7 @@ def _normalize_record(record: dict) -> dict:
     return {
         "topic": topic,
         "question": question,
+        "question_alternatives": question_alternatives,
         "explanation": explanation,
         "answers": normalized_answers,
     }
@@ -128,6 +137,7 @@ def import_records(db: Session, records: list[dict]) -> ImportStats:
         question = Question(
             topic_id=topic.id,
             prompt=record["question"],
+            prompt_alternatives=record["question_alternatives"],
             explanation=record["explanation"],
         )
         db.add(question)
