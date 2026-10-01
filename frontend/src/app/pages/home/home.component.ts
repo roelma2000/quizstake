@@ -152,29 +152,6 @@ import { QuizStateService } from '../../core/quiz-state.service';
         </ng-template>
       </section>
 
-      <section class="card">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">FREQUENTLY MISSED</p>
-            <h2>Questions to revisit</h2>
-          </div>
-          <a routerLink="/performance" class="text-link">View all</a>
-        </div>
-
-        <div *ngIf="weakQuestions.length; else noWeakQuestions" class="question-list">
-          <div *ngFor="let item of weakQuestions" class="question-row">
-            <div>
-              <span class="topic-pill">{{ item.topic_name }}</span>
-              <strong>{{ item.prompt }}</strong>
-            </div>
-            <span class="miss-count">{{ item.incorrect_answers }} miss{{ item.incorrect_answers === 1 ? '' : 'es' }}</span>
-          </div>
-        </div>
-
-        <ng-template #noWeakQuestions>
-          <p class="muted">No missed questions yet.</p>
-        </ng-template>
-      </section>
     </section>
   `,
   styles: [`
@@ -190,23 +167,20 @@ import { QuizStateService } from '../../core/quiz-state.service';
     .stat-card span { color:#667085; font-size:13px; font-weight:700; }
     .stat-card strong { font-size:30px; }
     .dashboard-grid { display:grid; grid-template-columns:minmax(0, 1.05fr) minmax(0, .95fr); gap:18px; margin-bottom:18px; }
-    .lower-grid { align-items:start; }
+    .lower-grid { grid-template-columns:1fr; align-items:start; }
     .setup, .weak-summary { display:grid; gap:18px; }
     .section-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
     .section-heading h2 { margin:4px 0 0; }
     small { display:block; }
-    .rank-list, .recent-list, .question-list { display:grid; gap:10px; }
-    .rank-row, .recent-row, .question-row { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:12px 0; border-bottom:1px solid #eaecf0; }
-    .rank-row:last-child, .recent-row:last-child, .question-row:last-child { border-bottom:0; }
-    .rank-row > div, .recent-row > div:first-child, .question-row > div { display:grid; gap:4px; min-width:0; }
+    .rank-list, .recent-list { display:grid; gap:10px; }
+    .rank-row, .recent-row { display:flex; justify-content:space-between; align-items:center; gap:16px; padding:12px 0; border-bottom:1px solid #eaecf0; }
+    .rank-row:last-child, .recent-row:last-child { border-bottom:0; }
+    .rank-row > div, .recent-row > div:first-child { display:grid; gap:4px; min-width:0; }
     .recent-row { color:inherit; text-decoration:none; }
     .recent-row:hover strong:first-child { color:#1f5eff; }
     .recent-score { display:grid; justify-items:end; gap:4px; }
     .recent-score span { border-radius:999px; padding:3px 8px; font-size:11px; font-weight:800; background:#ecfdf3; color:#027a48; }
     .recent-score span.terminated { background:#fef3f2; color:#b42318; }
-    .topic-pill { width:max-content; max-width:100%; overflow:hidden; text-overflow:ellipsis; border-radius:999px; padding:3px 8px; font-size:11px; font-weight:800; background:#eff4ff; color:#3538cd; }
-    .question-row strong { line-height:1.35; }
-    .miss-count { flex:0 0 auto; border-radius:999px; padding:4px 9px; font-size:12px; font-weight:800; background:#fef3f2; color:#b42318; }
     @media (max-width:900px) {
       .summary-grid { grid-template-columns:1fr 1fr; }
       .dashboard-grid { grid-template-columns:1fr; }
@@ -214,7 +188,7 @@ import { QuizStateService } from '../../core/quiz-state.service';
     @media (max-width:640px) {
       .hero, .section-heading { flex-direction:column; align-items:stretch; }
       .summary-grid { grid-template-columns:1fr 1fr; }
-      .rank-row, .recent-row, .question-row { align-items:flex-start; }
+      .rank-row, .recent-row { align-items:flex-start; }
     }
   `]
 })
