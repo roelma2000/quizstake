@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 
 import { ApiService } from '../../core/api.service';
@@ -252,13 +253,20 @@ export class QuestionManagementComponent implements OnInit {
   error = '';
   editorError = '';
   form: QuestionForm = this.emptyForm();
+  private requestedQuestionId: number | null = null;
 
   constructor(
     private readonly api: ApiService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly route: ActivatedRoute
   ) {}
 
   ngOnInit(): void {
+    const topicId = Number(this.route.snapshot.queryParamMap.get('topicId'));
+    const questionId = Number(this.route.snapshot.queryParamMap.get('questionId'));
+    this.selectedTopicId = Number.isInteger(topicId) && topicId > 0 ? topicId : null;
+    this.requestedQuestionId = Number.isInteger(questionId) && questionId > 0 ? questionId : null;
+
     this.api.getTopics().subscribe({
       next: topics => {
         this.topics = topics;
@@ -279,6 +287,15 @@ export class QuestionManagementComponent implements OnInit {
       next: questions => {
         this.questions = questions;
         this.loading = false;
+
+        if (this.requestedQuestionId) {
+          const requested = questions.find(item => item.id === this.requestedQuestionId);
+          if (requested) {
+            this.requestedQuestionId = null;
+            this.edit(requested);
+          }
+        }
+
         this.cdr.markForCheck();
       },
       error: err => {

@@ -12,6 +12,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
         <nav>
           <a routerLink="/">Quiz</a>
           <a routerLink="/history">History</a>
+          <a routerLink="/performance">Performance</a>
           <a routerLink="/topics">Topics</a>
           <a routerLink="/questions">Questions</a>
           <a routerLink="/import">Bulk Import</a>
