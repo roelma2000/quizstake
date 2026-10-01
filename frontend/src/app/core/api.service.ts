@@ -62,6 +62,13 @@ export class ApiService {
     });
   }
 
+  startWeakQuiz(topicId: number, questionCount: number): Observable<QuizStartResponse> {
+    return this.http.post<QuizStartResponse>(`${this.baseUrl}/quizzes/start-weak`, {
+      topic_id: topicId,
+      question_count: questionCount
+    });
+  }
+
   submitAnswer(sessionId: number, sessionQuestionId: number, choiceId: number): Observable<AnswerResponse> {
     return this.http.post<AnswerResponse>(`${this.baseUrl}/quizzes/${sessionId}/answer`, {
       session_question_id: sessionQuestionId,
