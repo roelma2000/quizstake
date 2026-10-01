@@ -26,11 +26,18 @@ class AnswerChoiceInput(BaseModel):
 class QuestionCreate(BaseModel):
     topic_id: int = Field(gt=0)
     prompt: str = Field(min_length=1)
+    prompt_alternatives: list[str] = Field(default_factory=list)
     explanation: str | None = None
     active: bool = True
     choices: list[AnswerChoiceInput] = Field(min_length=3, max_length=3)
 
     model_config = ConfigDict(str_strip_whitespace=True)
+
+    @field_validator("prompt_alternatives")
+    @classmethod
+    def clean_prompt_alternatives(cls, values: list[str]) -> list[str]:
+        cleaned = [value.strip() for value in values if value.strip()]
+        return list(dict.fromkeys(cleaned))
 
     @model_validator(mode="after")
     def validate_choices(self) -> "QuestionCreate":
@@ -42,11 +49,20 @@ class QuestionCreate(BaseModel):
 class QuestionUpdate(BaseModel):
     topic_id: int | None = Field(default=None, gt=0)
     prompt: str | None = Field(default=None, min_length=1)
+    prompt_alternatives: list[str] | None = None
     explanation: str | None = None
     active: bool | None = None
     choices: list[AnswerChoiceInput] | None = Field(default=None, min_length=3, max_length=3)
 
     model_config = ConfigDict(str_strip_whitespace=True)
+
+    @field_validator("prompt_alternatives")
+    @classmethod
+    def clean_prompt_alternatives(cls, values: list[str] | None) -> list[str] | None:
+        if values is None:
+            return None
+        cleaned = [value.strip() for value in values if value.strip()]
+        return list(dict.fromkeys(cleaned))
 
     @model_validator(mode="after")
     def validate_choices(self) -> "QuestionUpdate":
@@ -69,6 +85,7 @@ class QuestionRead(BaseModel):
     topic_id: int
     topic_name: str
     prompt: str
+    prompt_alternatives: list[str]
     explanation: str | None
     active: bool
     choices: list[AnswerChoiceRead]
