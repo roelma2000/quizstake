@@ -175,6 +175,51 @@ def submit_answer(
     return session, next_question
 
 
+def list_quiz_history(
+    db: Session,
+    topic_id: int | None = None,
+    limit: int = 100,
+) -> list[dict]:
+    stmt = (
+        select(QuizSession, Topic)
+        .join(Topic, Topic.id == QuizSession.topic_id)
+        .options(selectinload(QuizSession.questions))
+        .where(QuizSession.status != QuizStatus.ACTIVE)
+        .order_by(QuizSession.started_at.desc(), QuizSession.id.desc())
+        .limit(limit)
+    )
+    if topic_id is not None:
+        stmt = stmt.where(QuizSession.topic_id == topic_id)
+
+    history: list[dict] = []
+    for session, topic in db.execute(stmt).all():
+        answered = [
+            item for item in session.questions
+            if item.selected_choice_id is not None
+        ]
+        correct_count = sum(1 for item in answered if bool(item.is_correct))
+        score = round((correct_count / len(answered)) * 100, 2) if answered else 0.0
+
+        history.append(
+            {
+                "session_id": session.id,
+                "topic_id": session.topic_id,
+                "topic_name": topic.name,
+                "status": session.status.value,
+                "end_reason": session.end_reason,
+                "started_at": session.started_at,
+                "ended_at": session.ended_at,
+                "total_questions": len(session.questions),
+                "answered_questions": len(answered),
+                "correct_answers": correct_count,
+                "mistakes": session.mistake_count,
+                "score_percent": score,
+            }
+        )
+
+    return history
+
+
 def build_results(db: Session, session_id: int) -> dict:
     stmt = (
         select(QuizSession)
