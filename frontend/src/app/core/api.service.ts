@@ -1,7 +1,14 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AnswerResponse, QuizResult, QuizStartResponse, Topic } from './models';
+import {
+  AdminQuestion,
+  AnswerResponse,
+  QuestionPayload,
+  QuizResult,
+  QuizStartResponse,
+  Topic
+} from './models';
 
 @Injectable({ providedIn: 'root' })
 export class ApiService {
@@ -11,6 +18,26 @@ export class ApiService {
 
   getTopics(): Observable<Topic[]> {
     return this.http.get<Topic[]>(`${this.baseUrl}/topics`);
+  }
+
+  getQuestions(topicId?: number | null): Observable<AdminQuestion[]> {
+    let params = new HttpParams();
+    if (topicId) {
+      params = params.set('topic_id', topicId);
+    }
+    return this.http.get<AdminQuestion[]>(`${this.baseUrl}/questions`, { params });
+  }
+
+  createQuestion(payload: QuestionPayload): Observable<AdminQuestion> {
+    return this.http.post<AdminQuestion>(`${this.baseUrl}/questions`, payload);
+  }
+
+  updateQuestion(questionId: number, payload: Partial<QuestionPayload>): Observable<AdminQuestion> {
+    return this.http.patch<AdminQuestion>(`${this.baseUrl}/questions/${questionId}`, payload);
+  }
+
+  deleteQuestion(questionId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/questions/${questionId}`);
   }
 
   startQuiz(topicId: number, questionCount: number): Observable<QuizStartResponse> {

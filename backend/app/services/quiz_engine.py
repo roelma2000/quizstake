@@ -23,6 +23,16 @@ def _clean_variants(choice: AnswerChoice) -> list[str]:
     return list(dict.fromkeys(values))
 
 
+def _clean_prompt_variants(question: Question) -> list[str]:
+    values = [question.prompt]
+    values.extend(
+        item.strip()
+        for item in (question.prompt_alternatives or [])
+        if item and item.strip()
+    )
+    return list(dict.fromkeys(values))
+
+
 def _load_eligible_questions(db: Session, topic_id: int) -> list[Question]:
     stmt = (
         select(Question)
@@ -89,7 +99,7 @@ def start_quiz(db: Session, topic_id: int, requested_count: int) -> tuple[QuizSe
             session_id=session.id,
             question_id=question.id,
             position=position,
-            prompt_snapshot=question.prompt,
+            prompt_snapshot=_rng.choice(_clean_prompt_variants(question)),
             choice_payload=choice_payload,
         )
         db.add(session_question)
