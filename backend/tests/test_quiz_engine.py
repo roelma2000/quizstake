@@ -23,7 +23,11 @@ def db(tmp_path: Path):
 
 
 def add_question(db: Session, topic: Topic, number: int) -> Question:
-    question = Question(topic_id=topic.id, prompt=f"Question {number}")
+    question = Question(
+        topic_id=topic.id,
+        prompt=f"Question {number}",
+        prompt_alternatives=[f"Alternative question {number}"],
+    )
     db.add(question)
     db.flush()
     db.add_all(
@@ -49,6 +53,10 @@ def test_quiz_caps_at_100_and_has_unique_questions(db: Session):
     assert len(session.questions) == 100
     assert len({item.question_id for item in session.questions}) == 100
     assert all(len(item.choice_payload) == 3 for item in session.questions)
+    assert all(
+        item.prompt_snapshot in {item.question.prompt, *item.question.prompt_alternatives}
+        for item in session.questions
+    )
 
 
 def test_session_terminates_at_mistake_limit(db: Session):
