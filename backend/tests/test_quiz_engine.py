@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -6,8 +7,9 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.db.base import Base
 from app.models.question import AnswerChoice, Question
+from app.models.quiz import QuizSession, QuizSessionQuestion, QuizStatus
 from app.models.topic import Topic
-from app.services.quiz_engine import build_results, start_quiz, submit_answer
+from app.services.quiz_engine import build_results, start_quiz, start_weak_quiz, submit_answer
 
 
 @pytest.fixture()
@@ -82,3 +84,116 @@ def test_session_terminates_at_mistake_limit(db: Session):
     results = build_results(db, session.id)
     assert results["mistakes"] == 2
     assert results["answered_questions"] == 2
+
+
+
+def add_finished_attempt(
+    db: Session,
+    topic: Topic,
+    results: list[tuple[Question, bool]],
+    day: int,
+) -> None:
+    when = datetime(2026, 1, day, 12, 0, tzinfo=timezone.utc)
+    session = QuizSession(
+        topic_id=topic.id,
+        requested_count=len(results),
+        mistake_limit=topic.mistake_limit,
+        mistake_count=sum(1 for _, correct in results if not correct),
+        status=QuizStatus.COMPLETED,
+        end_reason="completed",
+        started_at=when,
+        ended_at=when,
+    )
+    db.add(session)
+    db.flush()
+
+    for position, (question, correct) in enumerate(results, start=1):
+        correct_choice = next(choice for choice in question.choices if choice.is_correct)
+        selected_choice = correct_choice if correct else next(
+            choice for choice in question.choices if not choice.is_correct
+        )
+        db.add(
+            QuizSessionQuestion(
+                session_id=session.id,
+                question_id=question.id,
+                position=position,
+                prompt_snapshot=question.prompt,
+                choice_payload=[
+                    {"id": choice.id, "text": choice.text}
+                    for choice in question.choices
+                ],
+                selected_choice_id=selected_choice.id,
+                is_correct=1 if correct else 0,
+                answered_at=when,
+            )
+        )
+
+    db.commit()
+
+
+def test_weak_quiz_selects_previously_missed_questions_by_priority(db: Session):
+    topic = Topic(name="Weak Module", mistake_limit=5, max_questions=10)
+    db.add(topic)
+    db.flush()
+    frequent_miss = add_question(db, topic, 1)
+    occasional_miss = add_question(db, topic, 2)
+    never_missed = add_question(db, topic, 3)
+    db.commit()
+
+    add_finished_attempt(
+        db,
+        topic,
+        [(frequent_miss, False), (occasional_miss, False), (never_missed, True)],
+        day=1,
+    )
+    add_finished_attempt(
+        db,
+        topic,
+        [(frequent_miss, False), (occasional_miss, True), (never_missed, True)],
+        day=2,
+    )
+
+    session, _ = start_weak_quiz(db, topic.id, 1)
+
+    assert len(session.questions) == 1
+    assert session.questions[0].question_id == frequent_miss.id
+
+
+def test_weak_quiz_caps_at_available_weak_questions(db: Session):
+    topic = Topic(name="Weak Module 2", mistake_limit=5, max_questions=10)
+    db.add(topic)
+    db.flush()
+    missed_a = add_question(db, topic, 1)
+    missed_b = add_question(db, topic, 2)
+    never_missed = add_question(db, topic, 3)
+    db.commit()
+
+    add_finished_attempt(
+        db,
+        topic,
+        [(missed_a, False), (missed_b, False), (never_missed, True)],
+        day=1,
+    )
+
+    session, _ = start_weak_quiz(db, topic.id, 10)
+
+    assert len(session.questions) == 2
+    assert {item.question_id for item in session.questions} == {missed_a.id, missed_b.id}
+
+
+def test_weak_quiz_requires_previously_missed_active_questions(db: Session):
+    topic = Topic(name="Weak Module 3", mistake_limit=5, max_questions=10)
+    db.add(topic)
+    db.flush()
+    question = add_question(db, topic, 1)
+    db.commit()
+
+    add_finished_attempt(db, topic, [(question, True)], day=1)
+
+    with pytest.raises(Exception) as exc_info:
+        start_weak_quiz(db, topic.id, 5)
+
+    assert getattr(exc_info.value, "status_code", None) == 400
+    assert "no previously missed active questions" in str(
+        getattr(exc_info.value, "detail", "")
+    ).lower()
