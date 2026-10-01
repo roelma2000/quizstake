@@ -114,3 +114,31 @@ export interface QuizHistoryItem {
   mistakes: number;
   score_percent: number;
 }
+
+
+export interface TopicPerformance {
+  topic_id: number;
+  topic_name: string;
+  attempts: number;
+  answered_questions: number;
+  correct_answers: number;
+  mistakes: number;
+  accuracy_percent: number;
+}
+
+export interface WeakQuestionPerformance {
+  question_id: number;
+  topic_id: number;
+  topic_name: string;
+  prompt: string;
+  attempts: number;
+  correct_answers: number;
+  incorrect_answers: number;
+  accuracy_percent: number;
+  last_answered_at: string | null;
+}
+
+export interface PerformanceAnalysis {
+  topics: TopicPerformance[];
+  weak_questions: WeakQuestionPerformance[];
+}
