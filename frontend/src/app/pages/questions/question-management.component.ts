@@ -19,6 +19,7 @@ interface ChoiceForm {
 interface QuestionForm {
   topic_id: number | null;
   prompt: string;
+  prompt_alternatives: string;
   explanation: string;
   active: boolean;
   choices: ChoiceForm[];
@@ -69,6 +70,16 @@ interface QuestionForm {
       <div class="field">
         <label for="prompt">Question</label>
         <textarea id="prompt" rows="3" [(ngModel)]="form.prompt"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="questionAlternatives">Alternative question wording</label>
+        <textarea
+          id="questionAlternatives"
+          rows="3"
+          [(ngModel)]="form.prompt_alternatives"
+          placeholder="One alternative question per line"></textarea>
+        <small class="muted">During a quiz, QuizStake randomly chooses the main question or one of these alternatives.</small>
       </div>
 
       <div class="field">
@@ -137,6 +148,15 @@ interface QuestionForm {
               </span>
             </div>
             <h2>{{ question.prompt }}</h2>
+            <div class="question-alternatives">
+              <div class="alternative-title">Alternative questions</div>
+              <ul *ngIf="question.prompt_alternatives.length; else noQuestionAlternatives" class="alternative-list">
+                <li *ngFor="let alternative of question.prompt_alternatives">{{ alternative }}</li>
+              </ul>
+              <ng-template #noQuestionAlternatives>
+                <div class="no-alternatives">None</div>
+              </ng-template>
+            </div>
           </div>
           <div class="row-actions">
             <button class="btn secondary" (click)="edit(question)">Edit</button>
@@ -202,6 +222,7 @@ interface QuestionForm {
     .meta span { display:inline-block; border-radius:999px; background:#ecfdf3; color:#027a48; padding:4px 9px; font-size:12px; font-weight:800; }
     .meta span:first-child { background:#eff4ff; color:#3538cd; }
     .meta span.inactive { background:#f2f4f7; color:#667085; }
+    .question-alternatives { margin-top:10px; padding:10px 12px; background:#f8fafc; border-radius:10px; }
     .explanation { margin:0; padding:12px 14px; background:#f8fafc; border-radius:10px; }
     .choice-list { margin:0; padding-left:24px; display:grid; gap:10px; }
     .choice-list li { padding:10px 12px; border:1px solid #e4e7ec; border-radius:9px; }
@@ -280,6 +301,7 @@ export class QuestionManagementComponent implements OnInit {
     this.form = {
       topic_id: question.topic_id,
       prompt: question.prompt,
+      prompt_alternatives: question.prompt_alternatives.join('\n'),
       explanation: question.explanation ?? '',
       active: question.active,
       choices: question.choices.map(choice => ({
@@ -363,6 +385,7 @@ export class QuestionManagementComponent implements OnInit {
     return {
       topic_id: topicId,
       prompt: '',
+      prompt_alternatives: '',
       explanation: '',
       active: true,
       choices: [
@@ -404,6 +427,10 @@ export class QuestionManagementComponent implements OnInit {
     return {
       topic_id: this.form.topic_id,
       prompt,
+      prompt_alternatives: this.form.prompt_alternatives
+        .split(/\r?\n|\|\|/)
+        .map(value => value.trim())
+        .filter(Boolean),
       explanation: this.form.explanation.trim() || null,
       active: this.form.active,
       choices
