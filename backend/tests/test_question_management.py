@@ -39,6 +39,7 @@ def question_payload(topic_id: int) -> QuestionCreate:
     return QuestionCreate(
         topic_id=topic_id,
         prompt="What does a red traffic light mean?",
+        prompt_alternatives=["What action is required at a steady red light?"],
         explanation="A steady red light requires a complete stop.",
         choices=[
             AnswerChoiceInput(
@@ -73,6 +74,7 @@ def test_create_and_update_question_preserves_choice_ids(db: Session, topic: Top
         created.id,
         QuestionUpdate(
             prompt="What must you do at a steady red traffic light?",
+            prompt_alternatives=["What is required at a steady red signal?"],
             explanation="Stop before the stop line or crosswalk.",
             choices=[
                 AnswerChoiceInput(text="Stop completely", alternatives=["Full stop"], is_correct=True),
@@ -84,6 +86,7 @@ def test_create_and_update_question_preserves_choice_ids(db: Session, topic: Top
     )
 
     assert updated.prompt == "What must you do at a steady red traffic light?"
+    assert updated.prompt_alternatives == ["What is required at a steady red signal?"]
     assert updated.explanation == "Stop before the stop line or crosswalk."
     assert [choice.id for choice in updated.choices] == original_choice_ids
     assert sum(choice.is_correct for choice in updated.choices) == 1
