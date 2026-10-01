@@ -10,7 +10,7 @@ import { RouterLink, RouterOutlet } from '@angular/router';
       <div class="container bar-inner">
         <a routerLink="/" class="brand">QuizStake</a>
         <nav>
-          <a routerLink="/">Quiz</a>
+          <a routerLink="/">Dashboard</a>
           <a routerLink="/history">History</a>
           <a routerLink="/performance">Performance</a>
           <a routerLink="/topics">Topics</a>
