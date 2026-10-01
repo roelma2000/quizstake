@@ -1,0 +1,57 @@
+[
+  {
+    "topic": "Module 1",
+    "question": "What should a driver do at a steady red traffic light?",
+    "explanation": "A steady red signal requires a complete stop before proceeding when legally permitted.",
+    "answers": [
+      {
+        "text": "Come to a complete stop",
+        "alternatives": [
+          "Stop the vehicle completely",
+          "Bring the vehicle to a full stop"
+        ],
+        "correct": true
+      },
+      {
+        "text": "Slow down and continue",
+        "alternatives": [
+          "Reduce speed and keep moving"
+        ],
+        "correct": false
+      },
+      {
+        "text": "Speed up through the intersection",
+        "alternatives": [],
+        "correct": false
+      }
+    ]
+  },
+  {
+    "topic": "Module 1",
+    "question": "Before changing lanes, what should a driver do?",
+    "explanation": "Check mirrors, signal, and verify the blind spot before moving into another lane.",
+    "answers": [
+      {
+        "text": "Check mirrors, signal, and check the blind spot",
+        "alternatives": [
+          "Use the mirrors, signal, then shoulder-check"
+        ],
+        "correct": true
+      },
+      {
+        "text": "Signal only after entering the next lane",
+        "alternatives": [
+          "Move first and signal afterward"
+        ],
+        "correct": false
+      },
+      {
+        "text": "Rely only on the rear-view mirror",
+        "alternatives": [
+          "Use only the centre mirror"
+        ],
+        "correct": false
+      }
+    ]
+  }
+]
