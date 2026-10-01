@@ -12,6 +12,7 @@ from app.models.question import AnswerChoice, Question
 from app.models.quiz import QuizEndReason, QuizSession, QuizSessionQuestion, QuizStatus
 from app.models.topic import Topic
 from app.schemas.quiz import PublicChoice, PublicQuestion, ReviewItem
+from app.services.performance import build_performance_analysis
 
 _rng = secrets.SystemRandom()
 
@@ -53,34 +54,17 @@ def _public_question(session_question: QuizSessionQuestion, total: int) -> Publi
     )
 
 
-def start_quiz(db: Session, topic_id: int, requested_count: int) -> tuple[QuizSession, PublicQuestion]:
-    topic = db.get(Topic, topic_id)
-    if topic is None or not topic.active:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found or inactive")
-
-    eligible = _load_eligible_questions(db, topic_id)
-    if not eligible:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Topic has no active questions with exactly three answers and one correct answer",
-        )
-
-    settings = get_settings()
-    count = min(
-        requested_count,
-        topic.max_questions,
-        settings.global_max_questions,
-        len(eligible),
-    )
-
-    # Randomization stage 1: unique random sample from the topic pool.
-    selected = _rng.sample(eligible, k=count)
-    # Randomization stage 2: independent final-order shuffle.
+def _create_quiz_session(
+    db: Session,
+    topic: Topic,
+    selected_questions: list[Question],
+) -> tuple[QuizSession, PublicQuestion]:
+    selected = list(selected_questions)
     _rng.shuffle(selected)
 
     session = QuizSession(
         topic_id=topic.id,
-        requested_count=count,
+        requested_count=len(selected),
         mistake_limit=topic.mistake_limit,
         mistake_count=0,
         status=QuizStatus.ACTIVE,
@@ -108,6 +92,79 @@ def start_quiz(db: Session, topic_id: int, requested_count: int) -> tuple[QuizSe
     db.refresh(session)
     first = session.questions[0]
     return session, _public_question(first, len(session.questions))
+
+
+def start_quiz(db: Session, topic_id: int, requested_count: int) -> tuple[QuizSession, PublicQuestion]:
+    topic = db.get(Topic, topic_id)
+    if topic is None or not topic.active:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found or inactive")
+
+    eligible = _load_eligible_questions(db, topic_id)
+    if not eligible:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Topic has no active questions with exactly three answers and one correct answer",
+        )
+
+    settings = get_settings()
+    count = min(
+        requested_count,
+        topic.max_questions,
+        settings.global_max_questions,
+        len(eligible),
+    )
+
+    # Randomization stage 1: unique random sample from the topic pool.
+    selected = _rng.sample(eligible, k=count)
+    return _create_quiz_session(db, topic, selected)
+
+
+def start_weak_quiz(
+    db: Session,
+    topic_id: int,
+    requested_count: int,
+) -> tuple[QuizSession, PublicQuestion]:
+    topic = db.get(Topic, topic_id)
+    if topic is None or not topic.active:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Topic not found or inactive")
+
+    eligible = _load_eligible_questions(db, topic_id)
+    if not eligible:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Topic has no active questions with exactly three answers and one correct answer",
+        )
+
+    eligible_by_id = {question.id: question for question in eligible}
+    performance = build_performance_analysis(
+        db,
+        topic_id=topic_id,
+        weak_limit=max(len(eligible_by_id), 1),
+    )
+    ranked = [
+        eligible_by_id[item["question_id"]]
+        for item in performance["weak_questions"]
+        if item["question_id"] in eligible_by_id
+    ]
+
+    if not ranked:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Topic has no previously missed active questions to practice",
+        )
+
+    settings = get_settings()
+    count = min(
+        requested_count,
+        topic.max_questions,
+        settings.global_max_questions,
+        len(ranked),
+    )
+
+    # Keep the strongest weak-question ranking for selection, then randomize
+    # only the presentation order of the chosen questions.
+    selected = ranked[:count]
+    return _create_quiz_session(db, topic, selected)
 
 
 def submit_answer(
