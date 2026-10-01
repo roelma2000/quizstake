@@ -89,3 +89,12 @@ export interface QuestionPayload {
   active: boolean;
   choices: QuestionChoiceInput[];
 }
+
+
+export interface TopicPayload {
+  name: string;
+  description: string | null;
+  mistake_limit: number;
+  max_questions: number;
+  active?: boolean;
+}
