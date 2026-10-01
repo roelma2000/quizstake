@@ -157,8 +157,14 @@ interface QuestionForm {
               <strong>{{ choice.text }}</strong>
               <span *ngIf="choice.is_correct" class="correct-label">Correct</span>
             </div>
-            <div *ngIf="choice.alternatives.length" class="alternatives muted">
-              Alternatives: {{ choice.alternatives.join(' · ') }}
+            <div class="alternative-block">
+              <div class="alternative-title">Alternative answers</div>
+              <ul *ngIf="choice.alternatives.length; else noAlternatives" class="alternative-list">
+                <li *ngFor="let alternative of choice.alternatives">{{ alternative }}</li>
+              </ul>
+              <ng-template #noAlternatives>
+                <div class="no-alternatives">None</div>
+              </ng-template>
             </div>
           </li>
         </ol>
@@ -201,7 +207,10 @@ interface QuestionForm {
     .choice-list li { padding:10px 12px; border:1px solid #e4e7ec; border-radius:9px; }
     .choice-list li.correct { border-color:#abefc6; background:#ecfdf3; }
     .correct-label { margin-left:8px; color:#027a48; font-size:12px; text-transform:uppercase; }
-    .alternatives { margin-top:5px; font-size:13px; }
+    .alternative-block { margin-top:8px; padding:9px 11px; border-radius:8px; background:#f8fafc; }
+    .alternative-title { font-size:12px; font-weight:800; text-transform:uppercase; letter-spacing:.04em; color:#475467; margin-bottom:5px; }
+    .alternative-list { margin:0; padding-left:20px; display:grid; gap:3px; color:#475467; font-size:13px; }
+    .no-alternatives { color:#98a2b3; font-size:13px; font-style:italic; }
     .empty { text-align:center; color:#667085; }
     @media (max-width: 760px) {
       .page-heading, .filters, .question-heading { flex-direction:column; align-items:stretch; }
