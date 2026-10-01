@@ -16,3 +16,6 @@ frontend/.angular/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Python package metadata
+*.egg-info/
