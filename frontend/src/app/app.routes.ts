@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { HomeComponent } from './pages/home/home.component';
+import { HistoryComponent } from './pages/history/history.component';
 import { ImportComponent } from './pages/import/import.component';
 import { QuestionManagementComponent } from './pages/questions/question-management.component';
 import { QuizComponent } from './pages/quiz/quiz.component';
@@ -10,6 +11,7 @@ export const routes: Routes = [
   { path: '', component: HomeComponent },
   { path: 'quiz/:sessionId', component: QuizComponent },
   { path: 'results/:sessionId', component: ResultsComponent },
+  { path: 'history', component: HistoryComponent },
   { path: 'questions', component: QuestionManagementComponent },
   { path: 'topics', component: TopicManagementComponent },
   { path: 'import', component: ImportComponent },
