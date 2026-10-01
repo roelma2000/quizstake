@@ -7,7 +7,8 @@ import {
   QuestionPayload,
   QuizResult,
   QuizStartResponse,
-  Topic
+  Topic,
+  TopicPayload
 } from './models';
 
 @Injectable({ providedIn: 'root' })
@@ -18,6 +19,18 @@ export class ApiService {
 
   getTopics(): Observable<Topic[]> {
     return this.http.get<Topic[]>(`${this.baseUrl}/topics`);
+  }
+
+  createTopic(payload: TopicPayload): Observable<Topic> {
+    return this.http.post<Topic>(`${this.baseUrl}/topics`, payload);
+  }
+
+  updateTopic(topicId: number, payload: Partial<TopicPayload>): Observable<Topic> {
+    return this.http.patch<Topic>(`${this.baseUrl}/topics/${topicId}`, payload);
+  }
+
+  deleteTopic(topicId: number): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/topics/${topicId}`);
   }
 
   getQuestions(topicId?: number | null): Observable<AdminQuestion[]> {
